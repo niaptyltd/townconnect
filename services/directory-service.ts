@@ -1,4 +1,5 @@
 import type { Business } from "@/types";
+
 type DemoCategory = {
   id: string;
   name: string;
@@ -9,34 +10,6 @@ type DemoTown = {
   id: string;
   name: string;
   slug: string;
-};
-
-type DemoBusiness = {
-  id: string;
-  businessName: string;
-  name: string;
-  slug: string;
-  categoryId: string;
-  townId: string;
-  description: string;
-  shortDescription: string;
-  addressLine1: string;
-  suburb: string;
-  phone: string;
-  email: string;
-  featured: boolean;
-  isFeatured: boolean;
-  sponsoredStatus: string;
-  verificationStatus: "verified" | "pending";
-  coverImageUrl: string;
-  galleryUrls: string[];
-  operatingHours: Array<{
-    day: string;
-    opens: string;
-    closes: string;
-    closed?: boolean;
-  }>;
-  bookingsEnabled: boolean;
 };
 
 const demoCategories: DemoCategory[] = [
@@ -50,26 +23,39 @@ const demoTowns: DemoTown[] = [
 
 const demoBusiness = {
   id: "1",
+  ownerId: "owner-1",
   businessName: "Demo Business",
-  name: "Demo Business",
   slug: "demo-business",
-  categoryId: "1",
-  townId: "1",
   description: "This is a demo business profile for TownConnect.",
   shortDescription: "Demo business in Vryheid.",
+  categoryId: "1",
+  subcategory: "",
+  tags: [],
+  townId: "1",
+  province: "KwaZulu-Natal",
   addressLine1: "123 Demo Street",
+  addressLine2: "",
   suburb: "CBD",
+  postalCode: "3100",
   phone: "+27 61 000 0000",
+  whatsappNumber: "+27 61 000 0000",
   email: "demo@townconnect.co.za",
-  featured: true,
-  isFeatured: true,
-  sponsoredStatus: "active",
-  verificationStatus: "verified",
+  websiteUrl: "",
+  logoUrl: "https://placehold.co/200x200",
   coverImageUrl: "https://placehold.co/1200x600",
   galleryUrls: [
     "https://placehold.co/600x400",
     "https://placehold.co/600x400"
   ],
+  listingStatus: "active",
+  verificationStatus: "verified",
+  featured: true,
+  sponsoredStatus: "active",
+  paymentProviderPreference: "placeholder",
+  leadFlowType: "whatsapp_first",
+  bookingsEnabled: true,
+  deliveryAvailable: false,
+  pickupAvailable: false,
   operatingHours: [
     { day: "Monday", opens: "08:00", closes: "17:00" },
     { day: "Tuesday", opens: "08:00", closes: "17:00" },
@@ -77,8 +63,16 @@ const demoBusiness = {
     { day: "Thursday", opens: "08:00", closes: "17:00" },
     { day: "Friday", opens: "08:00", closes: "17:00" }
   ],
-  bookingsEnabled: true
-};
+  socialLinks: [],
+  averageRating: 4.5,
+  reviewCount: 12,
+  referralCode: "DEMO123",
+  agentId: "",
+  subscriptionPlanId: "plan-free",
+  subscriptionStatus: "active",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+} as unknown as Business;
 
 export async function getDirectoryBootstrap() {
   return {
@@ -104,11 +98,11 @@ export async function getBusinessBySlug(_businessSlug?: string) {
   return demoBusiness;
 }
 
-export async function getBusinessCategory(_business?: DemoBusiness) {
+export async function getBusinessCategory(_business?: Business) {
   return demoCategories[0];
 }
 
-export async function getBusinessTown(_business?: DemoBusiness) {
+export async function getBusinessTown(_business?: Business) {
   return demoTowns[0];
 }
 
@@ -120,7 +114,7 @@ export async function getBusinessProducts(_businessId?: string) {
   return [];
 }
 
-export async function getRelatedBusinesses(_business?: DemoBusiness) {
+export async function getRelatedBusinesses(_business?: Business) {
   return [];
 }
 
@@ -138,4 +132,4 @@ export async function getFeaturedBusinesses() {
 
 export async function getSponsoredBusinesses() {
   return [{ business: demoBusiness }];
-}} as unknown as Business;
+}
