@@ -21,6 +21,10 @@ import {
 import type { Booking, Business, Enquiry, Plan, PlatformSettings, Subscription } from "@/types";
 import { getCommercialStateForBusiness } from "@/utils/plan";
 
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
 function getSupportedSubscriptionProviders(
   settings: PlatformSettings | undefined
 ): AdminSubscriptionUpdateInput["providerSlug"][] {
@@ -71,7 +75,9 @@ function buildSubscriptionDraft(
   };
 }
 
-export default function AdminBusinessDetailPage({ params }: { params: { id: string } }) {
+export default function AdminBusinessDetailPage({ params }: PageProps) {
+  const { id } = use(params);
+
   const businesses = useAdminCollection<Business>(listBusinesses);
   const subscriptions = useAdminCollection<Subscription>(listSubscriptions);
   const plans = useAdminCollection<Plan>(listPlans);
@@ -87,6 +93,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
     () => businesses.items.find((item) => item.id === id),
     [businesses.items, id]
   );
+
   const currentSubscription = useMemo(
     () => subscriptions.items.find((item) => item.businessId === id),
     [id, subscriptions.items]
@@ -214,6 +221,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
                 </option>
               ))}
             </Select>
+
             <Select
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -228,6 +236,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
               <option value="expired">Expired</option>
               <option value="cancelled">Cancelled</option>
             </Select>
+
             <Select
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -240,6 +249,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
               <option value="monthly">Monthly</option>
               <option value="annual">Annual</option>
             </Select>
+
             <Select
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -255,6 +265,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
                 </option>
               ))}
             </Select>
+
             <Input
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -265,6 +276,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
               type="date"
               value={toDateInput(subscriptionDraft.startsAt)}
             />
+
             <Input
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -275,6 +287,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
               type="date"
               value={toDateInput(subscriptionDraft.endsAt)}
             />
+
             <Select
               onChange={(event) =>
                 setSubscriptionDraft({
@@ -309,6 +322,7 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
               : `${bookings.items.filter((item) => item.businessId === business.id).length} booking records.`}
           </p>
         </Card>
+
         <Card>
           <h2 className="font-heading text-2xl font-semibold text-brand-ink">Enquiries</h2>
           <p className="mt-3 text-sm text-slate-600">
