@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: BusinessPageProps) {
 export default async function BusinessPage({ params }: BusinessPageProps) {
   const { businessSlug } = await params;
 
-  let business = null as Awaited<ReturnType<typeof getBusinessBySlug>>;
+  let business: Awaited<ReturnType<typeof getBusinessBySlug>> | null = null;
 
   try {
     business = await getBusinessBySlug(businessSlug);
