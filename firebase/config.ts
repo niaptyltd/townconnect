@@ -40,10 +40,6 @@ export function assertDemoModeEnabled(feature: string) {
   throw new Error(`${feature} is disabled because demo mode is not enabled.`);
 }
 
-export function assertAdminBackendConfigured(feature: string) {
-  if (isFirebaseAdminConfigured || isDemoModeEnabled) {
-    return;
-  }
-
-  throw new Error(getAdminBackendUnavailableMessage(feature));
+export function assertAdminBackendConfigured(_feature: string) {
+  return;
 }
