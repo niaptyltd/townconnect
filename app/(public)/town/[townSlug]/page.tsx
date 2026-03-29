@@ -85,7 +85,7 @@ export default async function TownPage({ params }: TownPageProps) {
         </Card>
 
         <ManagedBannerStrip
-          placement="town_top"
+          placement="town"
           townId={towns.find((item) => item.slug === townSlug)?.id}
         />
 
