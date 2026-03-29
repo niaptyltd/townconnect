@@ -1,117 +1,103 @@
-import { notFound } from "next/navigation";
-
 import { BusinessGrid } from "@/components/business/business-grid";
-import { SearchForm } from "@/components/forms/search-form";
 import { ManagedBannerStrip } from "@/components/sections/managed-banner-strip";
+import { Card } from "@/components/ui/card";
 import { PageState } from "@/components/ui/page-state";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { buildMetadata } from "@/lib/metadata";
 import {
-  getBusinessesByTownAndCategory,
-  getDirectoryBootstrap,
   getCategoryBySlug,
-  getTownBySlug
+  getDirectoryBootstrap,
+  getTownBySlug,
+  searchBusinesses
 } from "@/services/directory-service";
 
 type CategoryPageProps = {
-  params: {
+  params: Promise<{
     townSlug: string;
     categorySlug: string;
-  };
+  }>;
 };
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: CategoryPageProps) {
-  try {
-    const [town, category] = await Promise.all([
-      getTownBySlug(params.townSlug),
-      getCategoryBySlug(params.categorySlug)
-    ]);
+  const { townSlug, categorySlug } = await params;
 
-    if (!town || !category) {
-      return buildMetadata("Category");
-    }
-
-    return buildMetadata(
-      `${category.name} in ${town.name}`,
-      `Find ${category.name.toLowerCase()} businesses in ${town.name}.`,
-      `/town/${town.slug}/category/${category.slug}`
-    );
-  } catch {
-    return buildMetadata("Category");
-  }
+  return buildMetadata(
+    `${categorySlug} in ${townSlug}`,
+    `Browse ${categorySlug} businesses in ${townSlug}.`,
+    `/town/${townSlug}/category/${categorySlug}`
+  );
 }
 
-export default async function CategoryTownPage({ params }: CategoryPageProps) {
-  let town = null as Awaited<ReturnType<typeof getTownBySlug>>;
-  let category = null as Awaited<ReturnType<typeof getCategoryBySlug>>;
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { townSlug, categorySlug } = await params;
+
+  let error = "";
+  let categories = [] as Awaited<ReturnType<typeof getDirectoryBootstrap>>["categories"];
+  let towns = [] as Awaited<ReturnType<typeof getDirectoryBootstrap>>["towns"];
+  let results = [] as Awaited<ReturnType<typeof searchBusinesses>>;
+  let townName = townSlug;
+  let categoryName = categorySlug;
 
   try {
-    [town, category] = await Promise.all([
-      getTownBySlug(params.townSlug),
-      getCategoryBySlug(params.categorySlug)
-    ]);
-  } catch {
-    return (
-      <PageState
-        title="Category directory unavailable"
-        description="We could not load this category view from Firestore right now."
-        actionHref="/search"
-        actionLabel="Go to search"
-        tone="error"
-      />
-    );
-  }
-
-  if (!town || !category) notFound();
-
-  try {
-    const [bootstrap, results] = await Promise.all([
+    const [bootstrap, town, category, directoryResults] = await Promise.all([
       getDirectoryBootstrap(),
-      getBusinessesByTownAndCategory(params.townSlug, params.categorySlug)
+      getTownBySlug(townSlug),
+      getCategoryBySlug(categorySlug),
+      searchBusinesses({
+        townSlug,
+        categorySlug
+      })
     ]);
 
-    return (
-      <section className="section-space">
-        <div className="container-shell space-y-8">
-          <SectionHeading
-            eyebrow={town.name}
-            title={`${category.name} businesses`}
-            description={category.description}
-          />
+    categories = bootstrap.categories;
+    towns = bootstrap.towns;
+    results = directoryResults;
+    townName = town?.name ?? townSlug;
+    categoryName = category?.name ?? categorySlug;
+  } catch (pageError) {
+    error =
+      pageError instanceof Error
+        ? pageError.message
+        : "This category page could not be loaded right now.";
+  }
 
-          <SearchForm
-            categoryOptions={bootstrap.categories}
-            compact
-            defaultValues={{ townSlug: town.slug, categorySlug: category.slug }}
-            townOptions={bootstrap.towns}
-          />
+  const resultBusinesses = results.map((item) => item.business);
 
-          <ManagedBannerStrip
-            categoryId={category.id}
-            placement="category"
-            townId={town.id}
-          />
-
-          <BusinessGrid
-            categories={bootstrap.categories}
-            emptyDescription={`No ${category.name.toLowerCase()} businesses found in ${town.name} yet.`}
-            items={results}
-            towns={bootstrap.towns}
-          />
-        </div>
-      </section>
-    );
-  } catch {
+  if (error) {
     return (
       <PageState
-        title="Category directory unavailable"
-        description="We could not load this category view from Firestore right now."
+        title="Category page unavailable"
+        description={error}
         actionHref="/search"
-        actionLabel="Go to search"
+        actionLabel="Browse businesses"
         tone="error"
       />
     );
   }
+
+  return (
+    <section className="section-space">
+      <div className="container-shell space-y-8">
+        <SectionHeading
+          eyebrow="Category"
+          title={`${categoryName} in ${townName}`}
+          description={`Explore ${categoryName} businesses available in ${townName}.`}
+        />
+
+        <Card>
+          <p className="text-sm text-slate-600">{results.length} results found.</p>
+        </Card>
+
+        <ManagedBannerStrip
+          placement="category_top"
+          townId={towns.find((item) => item.slug === townSlug)?.id}
+          categoryId={categories.find((item) => item.slug === categorySlug)?.id}
+        />
+
+        <BusinessGrid categories={categories} items={resultBusinesses} towns={towns} />
+      </div>
+    </section>
+  );
 }
