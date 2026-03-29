@@ -91,7 +91,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </Card>
 
         <ManagedBannerStrip
-          placement="category_top"
+          placement="category"
           townId={towns.find((item) => item.slug === townSlug)?.id}
           categoryId={categories.find((item) => item.slug === categorySlug)?.id}
         />
