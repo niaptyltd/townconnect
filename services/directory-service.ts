@@ -1,25 +1,46 @@
-import type { Business } from "@/types";
+import type { Business, Category, Town } from "@/types";
 
-type DemoCategory = {
-  id: string;
-  name: string;
-  slug: string;
-};
+const demoCategory = {
+  id: "1",
+  name: "Food",
+  slug: "food",
+  icon: "",
+  description: "Demo category",
+  isActive: true,
+  sortOrder: 1,
+  featured: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+} as unknown as Category;
 
-type DemoTown = {
-  id: string;
-  name: string;
-  slug: string;
-};
+const demoCategory2 = {
+  id: "2",
+  name: "Services",
+  slug: "services",
+  icon: "",
+  description: "Demo category",
+  isActive: true,
+  sortOrder: 2,
+  featured: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+} as unknown as Category;
 
-const demoCategories: DemoCategory[] = [
-  { id: "1", name: "Food", slug: "food" },
-  { id: "2", name: "Services", slug: "services" }
-];
+const demoTown = {
+  id: "1",
+  name: "Vryheid",
+  slug: "vryheid",
+  province: "KwaZulu-Natal",
+  country: "South Africa",
+  description: "Demo town",
+  isActive: true,
+  featured: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+} as unknown as Town;
 
-const demoTowns: DemoTown[] = [
-  { id: "1", name: "Vryheid", slug: "vryheid" }
-];
+const demoCategories = [demoCategory, demoCategory2] as Category[];
+const demoTowns = [demoTown] as Town[];
 
 const demoBusiness = {
   id: "1",
@@ -99,11 +120,11 @@ export async function getBusinessBySlug(_businessSlug?: string) {
 }
 
 export async function getBusinessCategory(_business?: Business) {
-  return demoCategories[0];
+  return demoCategory;
 }
 
 export async function getBusinessTown(_business?: Business) {
-  return demoTowns[0];
+  return demoTown;
 }
 
 export async function getBusinessServices(_businessId?: string) {
@@ -119,11 +140,11 @@ export async function getRelatedBusinesses(_business?: Business) {
 }
 
 export async function getTownBySlug(_townSlug?: string) {
-  return demoTowns[0];
+  return demoTown;
 }
 
 export async function getCategoryBySlug(_categorySlug?: string) {
-  return demoCategories[0];
+  return demoCategory;
 }
 
 export async function getFeaturedBusinesses() {
