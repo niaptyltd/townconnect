@@ -26,16 +26,18 @@ import {
 } from "@/services/directory-service";
 
 type BusinessPageProps = {
-  params: {
+  params: Promise<{
     businessSlug: string;
-  };
+  }>;
 };
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: BusinessPageProps) {
+  const { businessSlug } = await params;
+
   try {
-    const business = await getBusinessBySlug(params.businessSlug);
+    const business = await getBusinessBySlug(businessSlug);
     if (!business) {
       return buildMetadata("Business");
     }
@@ -51,10 +53,12 @@ export async function generateMetadata({ params }: BusinessPageProps) {
 }
 
 export default async function BusinessPage({ params }: BusinessPageProps) {
+  const { businessSlug } = await params;
+
   let business = null as Awaited<ReturnType<typeof getBusinessBySlug>>;
 
   try {
-    business = await getBusinessBySlug(params.businessSlug);
+    business = await getBusinessBySlug(businessSlug);
   } catch {
     return (
       <PageState
