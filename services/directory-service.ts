@@ -95,8 +95,11 @@ const demoBusiness = {
   updatedAt: new Date().toISOString()
 } as unknown as Business;
 
+const demoBusinesses = [demoBusiness] as Business[];
+
 export async function getDirectoryBootstrap() {
   return {
+    businesses: demoBusinesses,
     categories: demoCategories,
     towns: demoTowns
   };
