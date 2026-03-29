@@ -139,7 +139,7 @@ export async function getBusinessProducts(_businessId?: string) {
 }
 
 export async function getRelatedBusinesses(_business?: Business) {
-  return [];
+  return demoBusinesses;
 }
 
 export async function getTownBySlug(_townSlug?: string) {
@@ -151,9 +151,10 @@ export async function getCategoryBySlug(_categorySlug?: string) {
 }
 
 export async function getFeaturedBusinesses() {
-  return [{ business: demoBusiness }];
+  return demoBusinesses;
 }
 
+
 export async function getSponsoredBusinesses() {
-  return [{ business: demoBusiness }];
+  return demoBusinesses;
 }
