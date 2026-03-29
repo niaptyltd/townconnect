@@ -1,0 +1,110 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && userDoc().data.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole("admin");
+    }
+
+    function isBusinessOwner() {
+      return hasRole("business_owner");
+    }
+
+    function ownsBusiness(businessId) {
+      return isBusinessOwner() &&
+        get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+    }
+
+    function isCustomerRecord(resourceData) {
+      return isSignedIn() &&
+        (resourceData.customerId == request.auth.uid || resourceData.customerEmail == request.auth.token.email);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /businesses/{businessId} {
+      allow read: if resource.data.listingStatus == "active" ||
+        isAdmin() ||
+        (isBusinessOwner() && resource.data.ownerId == request.auth.uid);
+      allow create: if isBusinessOwner() || isAdmin();
+      allow update: if isAdmin() || (isBusinessOwner() && resource.data.ownerId == request.auth.uid);
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin() || ownsBusiness(request.resource.data.businessId) || ownsBusiness(resource.data.businessId);
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin() || ownsBusiness(request.resource.data.businessId) || ownsBusiness(resource.data.businessId);
+    }
+
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read: if isAdmin() || ownsBusiness(resource.data.businessId) || isCustomerRecord(resource.data);
+      allow update: if isAdmin() ||
+        ownsBusiness(resource.data.businessId) ||
+        (isCustomerRecord(resource.data) && request.resource.data.status == "cancelled");
+    }
+
+    match /enquiries/{enquiryId} {
+      allow create: if true;
+      allow read: if isAdmin() ||
+        ownsBusiness(resource.data.businessId) ||
+        (isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.email == request.auth.token.email));
+      allow update: if isAdmin() || ownsBusiness(resource.data.businessId);
+    }
+
+    match /towns/{townId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /platform_settings/{settingsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAdmin() || ownsBusiness(resource.data.businessId);
+      allow write: if isAdmin();
+    }
+
+    match /activity_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
