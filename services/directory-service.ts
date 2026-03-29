@@ -1,3 +1,4 @@
+import type { Business } from "@/types";
 type DemoCategory = {
   id: string;
   name: string;
@@ -47,7 +48,7 @@ const demoTowns: DemoTown[] = [
   { id: "1", name: "Vryheid", slug: "vryheid" }
 ];
 
-const demoBusiness: DemoBusiness = {
+const demoBusiness = {
   id: "1",
   businessName: "Demo Business",
   name: "Demo Business",
@@ -137,4 +138,4 @@ export async function getFeaturedBusinesses() {
 
 export async function getSponsoredBusinesses() {
   return [{ business: demoBusiness }];
-}
+}} as unknown as Business;
