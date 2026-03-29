@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 
 import type { AdminSubscriptionUpdateInput } from "@/lib/admin-schemas";
 import { PageHeader } from "@/components/layout/page-header";
@@ -84,12 +84,12 @@ export default function AdminBusinessDetailPage({ params }: { params: { id: stri
   const [isSaving, setIsSaving] = useState(false);
 
   const business = useMemo(
-    () => businesses.items.find((item) => item.id === params.id),
-    [businesses.items, params.id]
+    () => businesses.items.find((item) => item.id === id),
+    [businesses.items, id]
   );
   const currentSubscription = useMemo(
-    () => subscriptions.items.find((item) => item.businessId === params.id),
-    [params.id, subscriptions.items]
+    () => subscriptions.items.find((item) => item.businessId === id),
+    [id, subscriptions.items]
   );
 
   useEffect(() => {
