@@ -10,7 +10,7 @@ export const metadata = buildMetadata("Search");
 export const dynamic = "force-dynamic";
 
 type SearchPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     keyword?: string;
     town?: string;
     category?: string;
@@ -19,10 +19,22 @@ type SearchPageProps = {
     delivery?: string;
     pickup?: string;
     bookings?: string;
-  };
+  }>;
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const {
+    keyword,
+    town,
+    category,
+    featured,
+    openNow,
+    delivery,
+    pickup,
+    bookings
+  } = resolvedSearchParams;
+
   let error = "";
   let categories = [] as Awaited<ReturnType<typeof getDirectoryBootstrap>>["categories"];
   let towns = [] as Awaited<ReturnType<typeof getDirectoryBootstrap>>["towns"];
@@ -32,14 +44,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const [bootstrap, directoryResults] = await Promise.all([
       getDirectoryBootstrap(),
       searchBusinesses({
-        keyword: searchParams?.keyword,
-        townSlug: searchParams?.town,
-        categorySlug: searchParams?.category,
-        featured: searchParams?.featured === "true",
-        openNow: searchParams?.openNow === "true",
-        delivery: searchParams?.delivery === "true",
-        pickup: searchParams?.pickup === "true",
-        bookingsEnabled: searchParams?.bookings === "true"
+        keyword,
+        townSlug: town,
+        categorySlug: category,
+        featured: featured === "true",
+        openNow: openNow === "true",
+        delivery: delivery === "true",
+        pickup: pickup === "true",
+        bookingsEnabled: bookings === "true"
       })
     ]);
 
@@ -69,9 +81,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             categoryOptions={error ? undefined : categories}
             compact
             defaultValues={{
-              keyword: searchParams?.keyword,
-              townSlug: searchParams?.town,
-              categorySlug: searchParams?.category
+              keyword,
+              townSlug: town,
+              categorySlug: category
             }}
             townOptions={error ? undefined : towns}
           />
@@ -84,11 +96,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               ["bookings", "Bookings enabled"]
             ].map(([key, label]) => {
               const params = new URLSearchParams();
-              if (searchParams?.keyword) params.set("keyword", searchParams.keyword);
-              if (searchParams?.town) params.set("town", searchParams.town);
-              if (searchParams?.category) params.set("category", searchParams.category);
-              const active = searchParams?.[key as keyof SearchPageProps["searchParams"]] === "true";
+              if (keyword) params.set("keyword", keyword);
+              if (town) params.set("town", town);
+              if (category) params.set("category", category);
+
+              const flagMap: Record<string, string | undefined> = {
+                featured,
+                openNow,
+                delivery,
+                pickup,
+                bookings
+              };
+
+              const active = flagMap[key] === "true";
               params.set(key, String(!active));
+
               return (
                 <a
                   className={`rounded-full px-4 py-2 ${
